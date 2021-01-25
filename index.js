@@ -21,9 +21,9 @@ app.use(
 
  
 
-const dburl = process.env.dburl
+// const dburl = process.env.dburl
 
-mongoose.connect(dburl,{ useNewUrlParser: true,  useUnifiedTopology: true  })
+mongoose.connect(process.env.dburl,{ useNewUrlParser: true,  useUnifiedTopology: true  })
     .then(() => app.listen(process.env.PORT || 3000, () => {
         console.log("server is started and data base is connected")
     }))
