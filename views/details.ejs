@@ -1,0 +1,25 @@
+<%- include('partials/header.ejs') %>
+
+<div class="container">
+    
+    <h2 class="text-center"><%- result.title %></h2>
+    <br><br>
+    <p><%- result.details %></p>
+    <br><br>
+<h3>Refernces:</h3>
+<% result.ref.forEach((i) => { %>
+    <a href="https://www.<%- i.link %>"><p><%- i.name %></p></a>
+<% }) %>
+<h3>Related:</h3>
+<% result.rel.forEach((i) => { %>
+    <a href="https://www.<%- i.link %>"><p><%- i.name %></p></a>
+<% }) %>
+
+   
+
+<a href="/a">back</a>
+</div>
+
+<%- include('partials/footer.ejs') %>
+
+

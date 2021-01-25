@@ -1,0 +1,19 @@
+<%- include('partials/header.ejs') %>
+<h1 class="text-center">Term start with '<%- letter %>' </h1>
+
+<div class="container">
+    <hr>    
+    <div class="text-center">
+    <% alphabet.forEach((i) => { %>
+        <a class="btn btn-link" href="/<%- i %>"><%- i %></a>
+    <% }) %>
+    </div>
+    <hr>
+
+    <% result.forEach((i) => { %>
+        <a href="/details/<%- i.id %>"><p><%- i.title %></p></a>
+    <% }) %>
+</div>
+
+
+<%- include('partials/footer.ejs') %>

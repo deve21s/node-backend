@@ -1,0 +1,65 @@
+<%- include('partials/header.ejs') %>
+<h2 class="text-center">Admin - panel</h2>
+<hr>
+<div class="container">
+<div class="text-right">
+    <a class="btn btn-primary" href="/new" role="button">Add-Glossary</a>
+    <a class="btn btn-danger" href="/logout" role="button">Logout</a>   
+</div>
+
+<% let count =0; %>
+
+<% result.forEach( i => { %>
+    <% count++; %>    
+<% }) %>
+    
+    <span class="badge bg-dark">Glossary-Count</span> - <span class="badge rounded-pill bg-primary"><%- count %></span>
+
+    <table class="table table-hover">    
+        <thead>
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Details</th>
+                <th scope="col">Refrences</th>
+                <th scope="col">Related</th>
+                <th scope="col">EDIT/DETELTE</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% result.forEach( i => { %>
+                <tr>
+                    <td><h4><%- i.title%></h4></td>
+                    <td><%- i.details%></td>
+                    <td>
+                        <% i.ref.forEach(ref => { %>
+                            <a href="<%- ref.link %>"><%- ref.name %></a>
+                        <% }) %>
+                        
+                    </td>
+
+                    <td>
+                        <% i.rel.forEach(rel => { %>
+                            <a href="<%- rel.link %>"><%- rel.name %></a>
+                        <% }) %>
+                    </td>
+                    
+                    <td>
+                    <form action="/delete/<%- i.id %>" method="POST">
+                        <button class="btn btn-danger" type="submit">Delete</button>
+                        
+                    </form>
+                    <form action="/edit/<%- i.id %>" method="GET">
+                        <button class="btn btn-danger" type="submit">Edit</button>
+                    </form>
+
+                    </td>
+                </tr>
+                
+            <% } )%>
+                
+        </tbody>
+    </table>
+   
+</div>
+
+<%- include('partials/footer.ejs') %>

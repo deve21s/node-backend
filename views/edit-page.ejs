@@ -1,0 +1,129 @@
+<%- include('partials/header.ejs') %>
+<div class="container center">
+<h1 class="text-center">Edit - Glossary</h2>
+    <br>
+    <br>
+
+<form action="/edit/<%-result.id %>" method="POST">
+    <div class="form-group">
+      <label for="title">Title:</label>
+      <input type="text" class="form-control" id="title" name="title" placeholder="Enter Title" value="<%- result.title %>">
+    </div>
+
+    <div class="form-group">
+        <label for="details">Details:</label>
+        <textarea class="form-control" id="details" name="details" rows="3"><%- result.details %></textarea>
+    </div>
+
+    <div>
+        <div class="form-group" id="refdiv">
+            <% result.ref.forEach( (i) => { %>
+                <label for="ref_name1">Refernces - Name:</label>
+            <input  type="text" class="form-control" id="ref_name1" name="ref_name1" value="<%- i.name %>">
+
+            <label for="ref_link1">Refernces - Link:</label>
+            <input type="text" class="form-control" id="ref_link1" name="ref_link1" value="<%- i.link %>">
+        
+            <% })%>
+            
+        </div>
+        <div>
+            <input type="button" class="btn btn-primary" onclick="addrefrence()" value="Add" />
+            <br>
+            <br>
+        </div>
+    </div>
+
+    <div>
+        <div class="form-group" id="reldiv">
+            <% result.rel.forEach( (i) => { %>
+            <label for="rel_name1">Related - Name:</label>
+            <input  type="text" class="form-control" id="rel_name1" name="rel_name1" value="<%- i.name %>">
+
+            <label for="ref_link1">Related - Link:</label>
+            <input type="text" class="form-control" id="rel_link1" name="rel_link1" value="<%- i.link %>">
+            <% })%>
+        
+        </div>
+
+        <div>
+            <input type="button" class="btn btn-primary" onclick="addreleted()" value="Add" />
+            <br>
+        </div>
+        <br>
+    </div>
+        <button type="submit" class="btn btn-success">save</button>
+</form>
+
+<div class="text-center">
+    <a href="/">back To Home</a>
+</div> 
+
+<script>
+    var refSeq = 2;
+    var relSeq = 2;
+
+    function addrefrence(){
+        var refdiv = document.getElementById("refdiv");
+
+        var reflink = document.createElement("input")
+        reflink.type = "text";
+        reflink.className = "form-control"
+        reflink.id = "ref_link" + refSeq
+        reflink.name = "ref_link" + refSeq
+
+        var reflink_lable = document.createElement('Label')
+        reflink_lable.setAttribute("for", "ref_link" + refSeq)
+        reflink_lable.textContent = "Refrences - Link"
+
+        var refname = document.createElement("input")
+        refname.type = "text";
+        refname.className = "form-control"
+        refname.id = "ref_name" + refSeq
+        refname.name = "ref_name" + refSeq
+
+        var refname_lable = document.createElement('Label')
+        refname_lable.setAttribute("for", "ref_name" + refSeq)
+        refname_lable.textContent = "Refrences - Name"
+
+
+        refSeq++;
+        refdiv.appendChild(refname_lable)
+        refdiv.appendChild(refname);
+        refdiv.appendChild(reflink_lable)
+        refdiv.appendChild(reflink);    
+    }
+
+
+    function addreleted(){
+        var reldiv = document.getElementById("reldiv");
+
+        var rellink = document.createElement("input")
+        rellink.type = "text";
+        rellink.className = "form-control"
+        rellink.id = "rel_link"
+        rellink.name = "rel_link" + relSeq
+
+        var rellink_lable = document.createElement('Label')
+        rellink_lable.setAttribute("for", "rel_link" + relSeq)
+        rellink_lable.textContent = "Related - Link:"
+
+        var relname = document.createElement("input")
+        relname.type = "text";
+        relname.className = "form-control"
+        relname.id = "rel_name" + relSeq
+        relname.name = "rel_name" + relSeq
+
+        var relname_lable = document.createElement('Label')
+        relname_lable.setAttribute("for", "rel_name" + relSeq)
+        relname_lable.textContent = "Related - Name:"
+
+        relSeq++;
+        reldiv.appendChild(relname_lable)
+        reldiv.appendChild(relname);
+        reldiv.appendChild(rellink_lable)
+        reldiv.appendChild(rellink);
+    }
+</script>
+
+<%- include('partials/footer.ejs') %>

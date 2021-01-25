@@ -1,0 +1,30 @@
+<%- include('partials/header.ejs') %>
+<div class="container">
+<h1 class="text-center">Ragister</h2>
+    <br>
+    <br>
+<form class="text-center" action="/ragister" method="POST">
+    <label for="name"> Name:</label>
+    <input type="text" name="ragister[name]">
+        <br>
+        <br>
+    <label for="email"> Email:</label>
+    <input type="email" name="ragister[email]">
+    
+    <br>
+    <br>
+    <label for="password"> Password:</label>
+    <input type="password" name="ragister[password]">
+    
+    <br>
+    <br>
+    <button>Ragister</button>
+    
+</form>
+</div>
+<br><br>
+<div class="text-center">
+    <a href="/login">Login</a>
+</div>
+
+<%- include('partials/footer.ejs') %>
