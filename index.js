@@ -21,7 +21,7 @@ app.use(
 
  
 
-const dburl = process.env.dburl
+const dburl = process.env.dburl || 5000
 
 mongoose.connect(dburl,{ useNewUrlParser: true,  useUnifiedTopology: true  })
     .then(() => app.listen(process.env.PORT || 5000, () => {
