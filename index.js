@@ -2,12 +2,16 @@ const express = require('express')
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const session = require('express-session')
+const cors = require('cors')
+const algoliasearch = require('algoliasearch');
 
 const words = require('./models/words')
 const User = require('./models/user')
 require('dotenv').config()
-
 const app = express()
+app.use(cors())
+
+
 
 app.set("view engine" , "ejs")
 app.use(express.json())
@@ -32,17 +36,45 @@ mongoose.connect(process.env.MONGODB_URI,{ useNewUrlParser: true,  useUnifiedTop
 
 const alphabet = ['a','b','c','d','e','f','g','h','i','j','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
 
-app.get('/', (req,res) => {
-    let letter = 'a';
-    words.find({"title": {$regex: '^' + letter, $options: 'i'}}).exec((err, data) => {
-        if(data) {
-            res.render('home', {result : data, alphabet, letter})
-        }else{
-            res.send('not found')
-        }
-    
-        })
 
+const client = algoliasearch('4E5ID5Z9QX', '85dfae50da7751740327ec1d6258e8e3');
+const index = client.initIndex('dev_deven');
+
+index.search('om').then(({ hits }) => {
+    console.log(hits);
+  });
+
+// app.get('/', (req,res) => {
+//     let letter = 'o';
+//     words.find({"title": {$regex: '^' + letter, $options: 'i'}}).exec((err, data) => {
+//         if(data) {
+//             // res.render('home', {result : data, alphabet, letter})
+//             res.json(data)
+//         }else{
+//             res.send('not found')
+//         }
+    
+//         })
+
+// })
+
+app.get('/', (req,res) => {
+    // words.find()
+    //     .then((result) => {
+    //         res.json(result)
+    //     })
+    //     .catch
+    //         res.json('not found')
+
+    words.find().exec((err, data) => {
+                if(data) {
+                    // res.render('home', {result : data, alphabet, letter})
+                    res.json(data)
+                }else{
+                    res.send('not found')
+                }
+            
+                })
 })
 
 app.get('/new', (req, res) => {
@@ -53,7 +85,7 @@ app.get('/new', (req, res) => {
     }
 })
 app.post('/new', async(req, res)=> {
-
+    console.log(req.body)
     var refs = [];
 
     var i = 1;
@@ -113,7 +145,7 @@ app.post('/new', async(req, res)=> {
 //     res.redirect(`/a`)
 // })
 
-app.get('/admin/login',(req,res) => {
+app.get('/login',(req,res) => {
     if(!req.session.user_id){
         res.render('login')
     }
@@ -122,25 +154,30 @@ app.get('/admin/login',(req,res) => {
     }
     
 })
-app.post('/admin/login', async(req,res) => {
+app.post('/login', async(req,res) => {
     const { email, password } = req.body;
-
     const user = await User.findOne({email : email})
     const validpassword = await bcrypt.compare(password, user.password)
     if(validpassword){
-        req.session.user_id = user._id 
-        res.redirect('/admin')
-    }else {
-        res.redirect('/admin/login')
-    }
+        req.session.user_id = user._id;
+         let userId = user._id
+        res.json(userId)
+        console.log(userId)
+        // console.log('valid')
+        // res.redirect('/admin')
+    }//else {
+    //     console.log('notvalid')
+    //     res.redirect('/login')
+    // }
 })
 app.get('/admin', (req, res) => {
-    if(req.session.user_id){
+     if(req.session.user_id){
         words.find({}).sort('-createdAt').exec((err, data)=> {
             if(data) {
                 res.render('admin', {result : data})
+              // res.json(data)
             }else {
-                res.send('no data')
+                res.json('no data')
             }
         })
     //     .then(result => {
@@ -149,9 +186,9 @@ app.get('/admin', (req, res) => {
     //     .catch(() => {
     //         res.send('no data')
     //     })
-    }else{
-        res.redirect('/admin/login')
-    }
+     }else{
+         res.redirect('/login                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ')
+     }
     
     
 })
@@ -165,7 +202,8 @@ app.get('/:letter',(req, res) => {
         let letter = req.params.letter;
         words.find({"title": {$regex: '^' + letter, $options: 'i'}}).exec((err, data) => {
             if(data) {
-                res.render('home', {result : data, alphabet, letter})
+                //res.render('home', {result : data, alphabet, letter})
+                res.json(data)
             }else{
                 res.send('not found')
             }
@@ -178,7 +216,8 @@ app.get('/details/:id',(req, res) => {
     words.findById(id)
         .then(result => {
             console.log(result)
-            res.render('details', {result: result})        
+            //res.render('details', {result: result}) 
+            res.json(result)       
         })
         .catch(() => {
             res.send('not found')
@@ -186,17 +225,17 @@ app.get('/details/:id',(req, res) => {
     
 })
 
-app.post('/delete/:id', (req, res) => {
+app.get('/delete/:id', (req, res) => {
     var id = req.params.id;
-
+    console.log('here',id)
     words.deleteOne({
         _id: id 
     }, function(err){
         if (err) {
-            console.log(err)
+            //console.log(err)
         }
         else {
-            res.redirect("/admin")
+           // res.redirect("/admin")
         }
     });
 })
@@ -206,7 +245,8 @@ app.get('/edit/:id', function(req, res) {
       if (err) {
         console.log(err);
       } else {
-        res.render('edit-page', { result : data });
+       // res.render('edit-page', { result : data });
+        res.json(data)
       }
     });
   });
