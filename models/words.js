@@ -36,7 +36,19 @@ const wordSchema = Schema({
           type: [
             "Mixed"
           ]
-        }
+        },
+        likes: {
+          type: String,
+          likeCount : String,
+          disLikeCount : String
+        },
+        
+        comments: [
+          {
+            type: Schema.Types.ObjectId,
+            ref: "Comment"
+          }
+        ]
       
 
 }, { timestamps : true})
