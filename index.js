@@ -28,7 +28,6 @@ var config = {
 
 const lrv2 = require('loginradius-sdk')(config)
 
-
 app.set("view engine" , "ejs")
 app.use(express.json())
 app.use(express.urlencoded({extended : true}))
@@ -39,16 +38,11 @@ app.use(
         saveUninitialized : false
     }))
 
- 
-
-
-
 mongoose.connect(process.env.MONGODB_URI,{ useNewUrlParser: true,  useUnifiedTopology: true  })
     .then(() => app.listen(process.env.PORT || 5000, () => {
         console.log("server is started and data base is connected")
     }))
     .catch((err)=> console.log(err))
-
 
 const alphabet = ['a','b','c','d','e','f','g','h','i','j','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
 
@@ -228,6 +222,35 @@ app.post('/reply/:cid', async(req, res) => {
     await comment.save()
 
     res.json('done')
+})
+app.post('/dislike/:id', async(req,res) => {
+
+    await words.updateOne(
+        {_id : req.params.id},
+        { $inc : {"likes.disLike" : 1} }
+    )
+    res.json("done")
+})
+app.post('/likes/:id', async(req, res) => {
+    
+    await words.updateOne(
+        { _id: req.params.id },
+        { $inc: { "likes.likeCount" : 1} }
+     )
+     res.send("done")
+  
+    // words.findByIdAndUpdate(req.params.id, {$set: {$inc: { "likes.likeCount": 1} } }, {$Option : { 'useFindAndModify' : 'false' } }, function(err){
+    //     if(err){
+    //         res.json('err')
+    //         //res.send('error !!')
+    //     }
+    //     else {
+    //         res.send("done")
+    //         //res.redirect('/admin')
+    //     }
+        
+    // });
+   
 })
 
 app.get('/:letter',(req, res) => {   

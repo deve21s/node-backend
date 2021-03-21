@@ -38,9 +38,8 @@ const wordSchema = Schema({
           ]
         },
         likes: {
-          type: String,
-          likeCount : String,
-          disLikeCount : String
+          likeCount : { type: Number, default: 0 },
+          disLike : { type: Number, default: 0 }
         },
         
         comments: [
