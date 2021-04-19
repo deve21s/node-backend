@@ -55,21 +55,21 @@ const index = client.initIndex('dev_deven');
 
 
 
-  
-// app.get('/', (req,res) => {
-//     let letter = 'o';
-//     words.find({"title": {$regex: '^' + letter, $options: 'i'}}).exec((err, data) => {
-//         if(data) {
-//             // res.render('home', {result : data, alphabet, letter})
-//             res.json(data)
-//         }else{
-//             res.send('not found')
-//         }
+app.use(cors())  
+app.get('/', (req,res) => {
+    let letter = 'o';
+    words.find({"title": {$regex: '^' + letter, $options: 'i'}}).exec((err, data) => {
+        if(data) {
+            // res.render('home', {result : data, alphabet, letter})
+            res.json(data)
+        }else{
+            res.send('not found')
+        }
     
-//         })
+        })
 
-// })
-app.use(cors())
+})
+
 app.post('/', (req,res) => {
     // words.find()
     //     .then((result) => {
