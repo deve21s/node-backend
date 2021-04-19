@@ -37,7 +37,9 @@ app.use(
         resave : false,
         saveUninitialized : false
     }))
-
+    //chage
+    
+    
 mongoose.connect(process.env.MONGODB_URI,{ useNewUrlParser: true,  useUnifiedTopology: true  })
     .then(() => app.listen(process.env.PORT || 5000, () => {
         console.log("server is started and data base is connected")
@@ -51,10 +53,9 @@ const alphabet = ['a','b','c','d','e','f','g','h','i','j','l','m','n','o','p','q
 const client = algoliasearch('4E5ID5Z9QX', '85dfae50da7751740327ec1d6258e8e3');
 const index = client.initIndex('dev_deven');
 
-index.search('om').then(({ hits }) => {
-    console.log(hits);
-  });
 
+
+  
 // app.get('/', (req,res) => {
 //     let letter = 'o';
 //     words.find({"title": {$regex: '^' + letter, $options: 'i'}}).exec((err, data) => {
@@ -69,13 +70,13 @@ index.search('om').then(({ hits }) => {
 
 // })
 app.use(cors())
-app.get('/', (req,res) => {
+app.post('/', (req,res) => {
     // words.find()
     //     .then((result) => {
     //         res.json(result)
     //     })
     //     .catch
-    //         res.json('not found')
+    //    res.json('not found')
 
     words.find().exec((err, data) => {
                 if(data) {
@@ -87,6 +88,19 @@ app.get('/', (req,res) => {
             
                 })
 })
+
+app.post('/all', (req,res) => {
+   
+    words.find().exec((err, data) => {
+                if(data) {
+                    res.json(data)
+                }else{
+                    res.json('not found')
+                }
+            
+                })
+})
+
 
 app.get('/new', (req, res) => {
     if(req.session.user_id){
