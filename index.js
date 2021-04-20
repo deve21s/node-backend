@@ -103,6 +103,24 @@ app.get("/", (req, res) => {
   });
 });
 
+app.post("/", (req, res) => {
+  // words.find()
+  //     .then((result) => {
+  //         res.json(result)
+  //     })
+  //     .catch
+  //    res.json('not found')
+
+  words.find().exec((err, data) => {
+    if (data) {
+      // res.render('home', {result : data, alphabet, letter})
+      res.json(data);
+    } else {
+      res.send("not found");
+    }
+  });
+});
+
 app.post("/all", (req, res) => {
   words.find().exec((err, data) => {
     if (data) {
