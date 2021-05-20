@@ -14,8 +14,8 @@ const app = express();
 
 var config = {
   apiDomain: "https://api.loginradius.com",
-  apiKey: "72743756-8266-4e7f-b335-e7d9ecb9bfa1",
-  apiSecret: "ce5994db-5e7b-4c65-8df0-a62a909d76db",
+  apiKey: process.env.Api_Key,
+  apiSecret: process.env.Api_SECRET,
   siteName: "https://myglossary.herokuapp.com",
   proxy: {
     host: "",
@@ -132,7 +132,7 @@ app.post("/login", (req, res) => {
         Roles : Roles || "user",
         ImageUrl
       }
-      const accesstoken = jwt.sign(user, 'devendra522')
+      const accesstoken = jwt.sign(user, process.env.TOKEN_SECRET)
       return res.json(accesstoken);
     })
     .catch((error) => {
@@ -363,7 +363,7 @@ function authenticateToken(req, res ,next){
   // const token = authHeder && authHeder.split(' ')[1]
   const {token} = req.query;
   if(token == null) return res.sendStatus(401)
-  jwt.verify(token , "devendra522", (err, user)=> {
+  jwt.verify(token , process.env.TOKEN_SECRET, (err, user)=> {
     if (err) return res.sendStatus(403)
     req.user = user
     console.log(user)
