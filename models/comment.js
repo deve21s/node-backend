@@ -4,6 +4,7 @@ const Schema = mongoose.Schema
 const commentSchema = new Schema({
     text: String,
     name : String,
+    imageUrl : String,
     replys: [
       {
         type: Schema.Types.ObjectId,

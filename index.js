@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const cors = require("cors");
-const algoliasearch = require("algoliasearch");
-
+const jwt = require('jsonwebtoken');
 const words = require("./models/words");
 const User = require("./models/user");
 const Comment = require("./models/comment");
@@ -27,9 +26,9 @@ var config = {
 };
 
 const lrv2 = require("loginradius-sdk")(config);
-
 app.set("view engine", "ejs");
 app.use(express.json());
+app.use(cors())
 app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
@@ -52,50 +51,10 @@ mongoose
   )
   .catch((err) => console.log(err));
 
-const alphabet = [
-  "a",
-  "b",
-  "c",
-  "d",
-  "e",
-  "f",
-  "g",
-  "h",
-  "i",
-  "j",
-  "l",
-  "m",
-  "n",
-  "o",
-  "p",
-  "q",
-  "r",
-  "s",
-  "t",
-  "u",
-  "v",
-  "w",
-  "x",
-  "y",
-  "z",
-];
-
-const client = algoliasearch("4E5ID5Z9QX", "85dfae50da7751740327ec1d6258e8e3");
-const index = client.initIndex("dev_deven");
-
-app.use(cors());
-
 app.get("/", (req, res) => {
-  // words.find()
-  //     .then((result) => {
-  //         res.json(result)
-  //     })
-  //     .catch
-  //    res.json('not found')
-
+  
   words.find().exec((err, data) => {
     if (data) {
-      // res.render('home', {result : data, alphabet, letter})
       res.json(data);
     } else {
       res.send("not found");
@@ -104,16 +63,9 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  // words.find()
-  //     .then((result) => {
-  //         res.json(result)
-  //     })
-  //     .catch
-  //    res.json('not found')
 
   words.find().exec((err, data) => {
     if (data) {
-      // res.render('home', {result : data, alphabet, letter})
       res.json(data);
     } else {
       res.send("not found");
@@ -173,35 +125,29 @@ app.post("/login", (req, res) => {
   lrv2.authenticationApi
     .loginByEmail(emailAuthenticationModel)
     .then((response) => {
-      let { access_token } = response;
-      let userId = access_token;
-      console.log(access_token);
-      res.json(userId);
-      console.log(response);
+      let { Uid, FirstName, Roles, ImageUrl } = response.Profile
+      let user = {
+        Uid,
+        FirstName,
+        Roles : Roles || "user",
+        ImageUrl
+      }
+      const accesstoken = jwt.sign(user, 'devendra522')
+      return res.json(accesstoken);
     })
     .catch((error) => {
-      console.log(error);
+      let { Message } = error
+      console.log(Message)
+      res.send(Message)
+      
     });
 });
-// app.post('/login', async(req,res) => {
-//     const { email, password } = req.body;
-//     const user = await User.findOne({email : email})
-//     const validpassword = await bcrypt.compare(password, user.password)
-//     if(validpassword){
-//         req.session.user_id = user._id;
-//          let userId = user._id
-//         res.json(userId)
-//         console.log(userId)
-//         // console.log('valid')
-//          res.redirect('/admin')
-//     }//else {
-//     //     console.log('notvalid')
-//     //     res.redirect('/login')
-//     // }
-// })
-app.get("/admin", (req, res) => {
-  if (req.session.user_id) {
-    words
+
+app.get("/admin", authenticateToken,(req, res) => {
+    console.log(req.user)
+    const {Roles} = req.user;
+    if(Roles === "admin"){
+      words
       .find({})
       .sort("-createdAt")
       .exec((err, data) => {
@@ -212,17 +158,21 @@ app.get("/admin", (req, res) => {
           res.json("no data");
         }
       });
+    }else{
+       res.status(401).json("you don't have admin permission")
+    }
+    
     //     .then(result => {
     //         res.render('admin', {result})
     //     })
     //     .catch(() => {
     //         res.send('no data')
     //     })
-  } else {
-    res.redirect(
-      "/login                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     "
-    );
-  }
+  // } else {
+    // res.redirect(
+    //   "/login                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     "
+    // );
+  // }
 });
 
 app.get("/logout", (req, res) => {
@@ -230,23 +180,24 @@ app.get("/logout", (req, res) => {
   res.redirect("/");
 });
 
-app.post("/comment/:id", async (req, res) => {
-  // const comid = "6020f73f6c2c71000475041f"
+app.post("/comment/:id",authenticateToken, async (req, res) => {
   const id = req.params.id;
+  const {text} = req.body
+  const comm = {
+    text : text,
+    name : req.user.FirstName,
+    imageUrl : 'https://www.pngitem.com/pimgs/m/150-1503945_transparent-user-png-default-user-image-png-png.png'
+  } 
   const words = await Words.findById(id);
-  // const comment = new Comment({
-  //     name : "suresh",
-  //     text : "this is good artical"
-  // })
-  const comment = new Comment(req.body);
+  const comment = new Comment(comm);
   words.comments.push(comment);
   await comment.save();
   await words.save();
   Words.findById({ _id: id })
     .populate({
-      path: "comments", // populate blogs
+      path: "comments", 
       populate: {
-        path: "replys", // in blogs, populate comments
+        path: "replys",
       },
     })
     .then((data) => {
@@ -257,7 +208,6 @@ app.post("/comment/:id", async (req, res) => {
 app.post("/reply/:cid", async (req, res) => {
   const id = req.params.cid;
   const comment = await Comment.findById(id);
-
   const reply = new Reply(req.body);
   comment.replys.push(reply);
   await reply.save();
@@ -278,18 +228,6 @@ app.post("/likes/:id", async (req, res) => {
     { $inc: { "likes.likeCount": 1 } }
   );
   res.send("done");
-
-  // words.findByIdAndUpdate(req.params.id, {$set: {$inc: { "likes.likeCount": 1} } }, {$Option : { 'useFindAndModify' : 'false' } }, function(err){
-  //     if(err){
-  //         res.json('err')
-  //         //res.send('error !!')
-  //     }
-  //     else {
-  //         res.send("done")
-  //         //res.redirect('/admin')
-  //     }
-
-  // });
 });
 
 app.get("/:letter", (req, res) => {
@@ -308,31 +246,17 @@ app.get("/:letter", (req, res) => {
 
 app.get("/details/:id", (req, res) => {
   let id = req.params.id;
-  // words.findById(id).populate('comments').populate('replys').exec((err, posts) => {
-  //     console.log(posts)
-  //     res.json(posts)
-  //   })
-
   words
     .findOne({ _id: id })
     .populate({
-      path: "comments", // populate blogs
+      path: "comments", 
       populate: {
-        path: "replys", // in blogs, populate comments
+        path: "replys", 
       },
     })
     .then((data) => {
       res.json(data);
     });
-
-  // .then(result => {
-  //     console.log(result)
-  //     //res.render('details', {result: result})
-  //     res.json(result)
-  // })
-  // .catch(() => {
-  //     res.send('not found')
-  // })
 });
 
 app.get("/delete/:id", (req, res) => {
@@ -410,18 +334,6 @@ app.post("/edit/:id", function (req, res) {
     }
   });
 });
-app.get("/search/:title", (req, res) => {
-  let title = req.params.title;
-  const client = algoliasearch(
-    "4E5ID5Z9QX",
-    "85dfae50da7751740327ec1d6258e8e3"
-  );
-  const index = client.initIndex("dev_deven");
-
-  index.search(title).then(({ hits }) => {
-    res.json(hits);
-  });
-});
 
 app.all("*", function (req, res) {
   res.status(404);
@@ -445,3 +357,16 @@ app.all("*", function (req, res) {
 //     req.session.user_id = user._id;
 //     res.redirect(`/a`)
 // })
+
+function authenticateToken(req, res ,next){
+  // const authHeder = req.headers['authorization']
+  // const token = authHeder && authHeder.split(' ')[1]
+  const {token} = req.query;
+  if(token == null) return res.sendStatus(401)
+  jwt.verify(token , "devendra522", (err, user)=> {
+    if (err) return res.sendStatus(403)
+    req.user = user
+    console.log(user)
+    next()
+  })
+}
