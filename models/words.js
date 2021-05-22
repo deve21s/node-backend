@@ -19,12 +19,8 @@ const wordSchema = Schema(
       likeCount: { type: Number, default: 0 },
       disLike: { type: Number, default: 0 },
     },
-    like : {
-      type : ["Mixed"]
-    },
-    dislike : {
-      type : ["Mixed"]
-    },
+    like : [String],
+    dislike : [String],
     comments: [
       {
         type: Schema.Types.ObjectId,

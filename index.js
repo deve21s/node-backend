@@ -90,7 +90,7 @@ app.get("/new", (req, res) => {
     res.redirect("/admin/login");
   }
 });
-app.post("/new", async (req, res) => {
+app.post("/new",authenticateToken, async (req, res) => {
   console.log(req.body);
 
   const { title, details, ref, rel } = req.body;
@@ -186,7 +186,7 @@ app.post("/comment/:id",authenticateToken, async (req, res) => {
   const comm = {
     text : text,
     name : req.user.FirstName,
-    imageUrl : 'https://www.pngitem.com/pimgs/m/150-1503945_transparent-user-png-default-user-image-png-png.png'
+    imageUrl : req.user.ImageUrl || 'https://www.pngitem.com/pimgs/m/150-1503945_transparent-user-png-default-user-image-png-png.png'
   } 
   const words = await Words.findById(id);
   const comment = new Comment(comm);
@@ -205,29 +205,72 @@ app.post("/comment/:id",authenticateToken, async (req, res) => {
     });
 });
 
-app.post("/reply/:cid", async (req, res) => {
+app.post("/reply/:cid",authenticateToken, async (req, res) => {
   const id = req.params.cid;
   const comment = await Comment.findById(id);
-  const reply = new Reply(req.body);
+  let { text } = req.body;
+  let replaybody = {
+    name : req.user.FirstName,
+    text : text,
+    imageUrl : req.user.ImageUrl || 'https://www.pngitem.com/pimgs/m/150-1503945_transparent-user-png-default-user-image-png-png.png'
+  }
+  const reply = new Reply([replaybody]);
   comment.replys.push(reply);
   await reply.save();
   await comment.save();
-
-  res.json("done");
+  // Words.findById({ _id: id })
+  //   .populate({
+  //     path: "comments", 
+  //     populate: {
+  //       path: "replys",
+  //     },
+  //   })
+  //   .then((data) => {
+  //     res.json(data);
+  //   });
 });
-app.post("/dislike/:id", async (req, res) => {
-  await words.updateOne(
-    { _id: req.params.id },
-    { $inc: { "likes.disLike": 1 } }
-  );
-  res.json("done");
+app.post("/dislike/:id", authenticateToken, async (req, res) => {
+  // await words.updateOne(
+  //   { _id: req.params.id },
+  //   { $inc: { "likes.disLike": 1 } }
+  // );
+  // res.json("done");
+  let { Uid } = req.user
+  console.log(Uid)
+  const word = await words.findById(req.params.id,{dislike : 1})
+  // const test = word.like.find({like : Uid})
+  let disliked = word.dislike.includes(Uid)
+  if(Uid == ""){
+    return res.json("pls login first")
+  }
+  else if(disliked){
+    return res.json("you disLiked already.")
+  }else {
+    word.dislike.push(Uid)
+    let data =  await word.save()
+    console.log(data)
+    return res.json("dislike added successfully.")
+  }
 });
-app.post("/likes/:id", async (req, res) => {
-  await words.updateOne(
-    { _id: req.params.id },
-    { $inc: { "likes.likeCount": 1 } }
-  );
-  res.send("done");
+app.post("/likes/:id", authenticateToken , async (req, res) => {
+  // await words.updateOne(
+  //   { _id: req.params.id },
+  //   { $inc: { "likes.likeCount": 1 } }
+  // );
+  let {Uid} = req.user
+  const word = await words.findById(req.params.id,{like : 1})
+  // const test = word.like.find({like : Uid})
+  let liked = word.like.includes(Uid)
+  if(Uid == ""){
+    return res.json("pls login first")
+  }
+  else if(liked){
+    return res.json("you liked already.")
+  }else {
+    word.like.push(Uid)
+    await word.save()
+    return res.json("like added successfully.")
+  }
 });
 
 app.get("/:letter", (req, res) => {
@@ -259,7 +302,7 @@ app.get("/details/:id", (req, res) => {
     });
 });
 
-app.get("/delete/:id", (req, res) => {
+app.get("/delete/:id",authenticateToken, (req, res) => {
   var id = req.params.id;
   console.log("here", id);
   words.deleteOne(
@@ -270,7 +313,7 @@ app.get("/delete/:id", (req, res) => {
       if (err) {
         //console.log(err)
       } else {
-        // res.redirect("/admin")
+        res.json("done")
       }
     }
   );
@@ -287,7 +330,7 @@ app.get("/edit/:id", function (req, res) {
   });
 });
 
-app.post("/edit/:id", function (req, res) {
+app.post("/edit/:id",authenticateToken, function (req, res) {
   var refs = [];
 
   var i = 1;
