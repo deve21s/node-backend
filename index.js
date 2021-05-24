@@ -142,6 +142,25 @@ app.post("/login", (req, res) => {
       
     });
 });
+app.get("/auth",(req, res) => {
+  let token = req.query.token
+  lrv2.authenticationApi.authValidateAccessToken(token).then((response) => {
+    let { Uid, FirstName, Roles, ImageUrl } = response.Profile
+    let user = {
+      Uid,
+      FirstName,
+      Roles : Roles || "user",
+      ImageUrl
+    }
+    const accesstoken = jwt.sign(user, process.env.TOKEN_SECRET)
+    return res.json(accesstoken);
+  })
+  .catch((error) => {
+    let { Message } = error
+    console.log(Message)
+    res.send(Message)
+  });
+})
 
 app.get("/admin", authenticateToken,(req, res) => {
     console.log(req.user)
