@@ -142,7 +142,7 @@ app.post("/login", (req, res) => {
       
     });
 });
-app.get("/auth",(req, res) => {
+app.post("/auth",(req, res) => {
   let token = req.body.token
   console.log(token)
   lrv2.authenticationApi.authValidateAccessToken(token).then((response) => {
